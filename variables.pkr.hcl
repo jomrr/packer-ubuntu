@@ -28,6 +28,31 @@ variable "iso_checksum" {
     default = "sha256:8762f7e74e4d64d72fceb5f70682e6b069932deedb4949c6975d0f0fe0a91be3"
 }
 
+variable "proxmox_url" {
+    type = string
+    default = "https://192.168.122.167:8006/api2/json"
+}
+
+variable "proxmox_username" {
+    type = string
+    default = "root@pam"
+}
+
+variable "proxmox_password" {
+    type = string
+    default = "packer"
+}
+
+variable "proxmox_node" {
+    type = string
+    default = "pve"
+}
+
+variable "proxmox_pool" {
+    type = string
+    default = "local-btrfs"
+}
+
 variable "ssh_username" {
     type = string
     default = "packer"

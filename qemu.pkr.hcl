@@ -11,6 +11,7 @@ source "qemu" "ubuntu" {
   accelerator       = "kvm"
   boot_command      = ["c<wait>linux /casper/vmlinuz --- autoinstall ds='nocloud-net'<enter><wait1s>initrd /casper/initrd <enter><wait1s>boot <enter><wait1s>"]
   boot_wait         = "5s"
+  communicator      = "ssh"
   cpus              = "4"
   disk_discard      = "unmap"
   disk_interface    = "virtio"
@@ -44,4 +45,14 @@ source "qemu" "ubuntu" {
 
 build {
     sources = ["source.qemu.ubuntu"]
+
+    provisioner "ansible" {
+      galaxy_file   = "./requirements.yml"
+      playbook_file = "./playbook.yml"
+      user          = "${var.ssh_username}"
+      extra_arguments = [
+        "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",
+        "--extra-vars", "ansible_become_pass=${var.ssh_password}",
+      ]
+    }
 }
