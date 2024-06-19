@@ -1,0 +1,8 @@
+---
+
+collections:
+  - name: community.general
+
+roles:
+  - src: https://github.com/jomrr/ansible-role-sysctl
+    version: main
