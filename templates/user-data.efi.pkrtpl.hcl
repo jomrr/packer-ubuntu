@@ -4,9 +4,9 @@ autoinstall:
     id: ubuntu-server-minimal
   version: 1
   early-commands:
-    - systemctl stop ssh
+    - systemctl disable --now ssh # runs in install env
   identity:
-    hostname: ${var.vm_name}
+    hostname: ${var.vm_name_prefix}-${source.value.name}
     username: ${var.ssh_username}
     password: ${var.ssh_password_encrypted}
   keyboard:
@@ -14,26 +14,7 @@ autoinstall:
   locale: en_US.UTF-8
   kernel:
     package: linux-virtual
-  packages:
-    - apt-transport-https
-    - bash-completion
-    - byobu
-    - ca-certificates
-    - cron
-    - curl
-    - iputils-ping
-    - nano
-    - net-tools
-    - neovim
-    - openssh-server
-    - open-vm-tools
-    - qemu-guest-agent
-    - python3-apt
-    - software-properties-common
-    - sudo
-    - systemd-journal-remote
-    - systemd-timesyncd
-    - wget
+  packages: [${join(",", [for package in source.value.packages : "\"${package}\""])}]
   ssh:
     install-server: yes
     allow-pw: yes
@@ -92,5 +73,9 @@ autoinstall:
     - { fstype: ext4, volume: audit-lv, preserve: false, type: format, id: audit-filesystem }
     - { path: /var/log/audit, options: "relatime,nodev,noexec,nosuid", device: audit-filesystem, type: mount, id: audit-mount }
   late-commands:
-    - "echo '${var.ssh_username} ALL=(ALL:ALL) ALL' > /target/etc/sudoers.d/${var.ssh_username}"
-    - "chmod 440 /target/etc/sudoers.d/${var.ssh_username}"
+    - curtin in-target --target=/target -- systemctl mask ctrl-alt-del.target # runs in target env
+    - "echo '${var.ssh_username} ALL=(ALL:ALL) ALL' > /target/etc/sudoers.d/${var.ssh_username}" # writes to target env
+    - "chmod 440 /target/etc/sudoers.d/${var.ssh_username}" # changes target env
+    - curtin in-target --target=/target -- sudo sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 apparmor=1 security=apparmor"/' /etc/default/grub
+    - curtin in-target --target=/target -- update-grub
+    - systemctl enable --now ssh # runs in install env

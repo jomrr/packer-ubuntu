@@ -1,12 +1,3 @@
-packer {
-  required_plugins {
-    proxmox = {
-      version = "~> 1"
-      source  = "github.com/hashicorp/proxmox"
-    }
-  }
-}
-
 source "proxmox-iso" "ubuntu" {
   bios              = var.boot_mode == "efi" ? "ovmf" : "seabios"
   boot_command      = ["c<wait>linux /casper/vmlinuz --- autoinstall ds='nocloud-net'<enter><wait1s>initrd /casper/initrd <enter><wait1s>boot <enter><wait1s>"]
@@ -27,8 +18,8 @@ source "proxmox-iso" "ubuntu" {
 
   additional_iso_files {
     cd_content        = {
-      "meta-data" = jsonencode("instance-id: ${var.vm_name}\nlocal-hostname: ${var.vm_name}"),
-      "user-data" = templatefile("./templates/user-data.${var.boot_mode}.pkrtpl.hcl", {var = var })
+      "meta-data" = "{\"instance-id\":\"${var.vm_name_prefix}-${source.value.name}\",\"local-hostname\":\"${var.vm_name_prefix}-${source.value.name}\"}",
+      "user-data" = templatefile("./templates/user-data.${var.boot_mode}.pkrtpl.hcl", { var = var, source = source })
     }
     cd_label          = "cidata"
     iso_storage_pool  = "${var.proxmox_pool}"
@@ -67,7 +58,7 @@ source "proxmox-iso" "ubuntu" {
     type = "qxl"
   }
 
-  vm_name           = "${var.vm_name}"
+  vm_name           = join("-", [var.vm_name_prefix, source.value.name])
 }
 
 build {

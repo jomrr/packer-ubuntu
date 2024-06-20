@@ -6,7 +6,7 @@ autoinstall:
   early-commands:
     - systemctl stop ssh
   identity:
-    hostname: ${var.vm_name}
+    hostname: ${var.vm_name_prefix}-${source.value.name}
     username: ${var.ssh_username}
     password: ${var.ssh_password_encrypted}
   keyboard:
@@ -14,26 +14,7 @@ autoinstall:
   locale: en_US.UTF-8
   kernel:
     package: linux-virtual
-  packages:
-    - apt-transport-https
-    - bash-completion
-    - byobu
-    - ca-certificates
-    - cron
-    - curl
-    - iputils-ping
-    - nano
-    - net-tools
-    - neovim
-    - openssh-server
-    - open-vm-tools
-    - qemu-guest-agent
-    - python3-apt
-    - software-properties-common
-    - sudo
-    - systemd-journal-remote
-    - systemd-timesyncd
-    - wget
+  packages: [${join(",", [for p in source.value.packages : "\"${p}\""])}]
   ssh:
     install-server: yes
     allow-pw: yes
@@ -41,6 +22,12 @@ autoinstall:
     disable_root: true
   timezone: Europe/Berlin
   updates: all
+  write_files:
+  - path: /etc/default/grub.d/99-disable-ipv6.cfg
+    content: |
+      GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT ipv6.disable=1"
+  runcmd:
+    - update-grub
   storage:
     config:
 # Disk setup
