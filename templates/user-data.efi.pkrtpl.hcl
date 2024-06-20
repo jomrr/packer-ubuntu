@@ -19,7 +19,9 @@ autoinstall:
     - bash-completion
     - byobu
     - ca-certificates
+    - cron
     - curl
+    - iputils-ping
     - nano
     - net-tools
     - neovim
@@ -28,6 +30,9 @@ autoinstall:
     - qemu-guest-agent
     - python3-apt
     - software-properties-common
+    - sudo
+    - systemd-journal-remote
+    - systemd-timesyncd
     - wget
   ssh:
     install-server: yes
@@ -61,7 +66,7 @@ autoinstall:
 # 48G for home
     - { size: 48G, volgroup: vg0, wipe: superblock, preserve: false, name: home, type: lvm_partition, id: home-lv }
     - { fstype: ext4, volume: home-lv, preserve: false, type: format, id: home-filesystem }
-    - { path: /home, options: "relatime,nodev", device: home-filesystem, type: mount, id: home-mount }
+    - { path: /home, options: "relatime,nodev,nosuid", device: home-filesystem, type: mount, id: home-mount }
 # 16G for opt
     - { size: 16G, volgroup: vg0, wipe: superblock, preserve: false, name: opt, type: lvm_partition, id: opt-lv }
     - { fstype: ext4, volume: opt-lv, preserve: false, type: format, id: opt-filesystem }
@@ -73,11 +78,11 @@ autoinstall:
 # 48G for var
     - { size: 48G, volgroup: vg0, wipe: superblock, preserve: false, name: var, type: lvm_partition, id: var-lv }
     - { fstype: ext4, volume: var-lv, preserve: false, type: format, id: var-filesystem }
-    - { path: /var, options: "relatime", device: var-filesystem, type: mount, id: var-mount }
+    - { path: /var, options: "relatime,nodev,nosuid", device: var-filesystem, type: mount, id: var-mount }
 # 8G for var/tmp
     - { size: 8G, volgroup: vg0, wipe: superblock, preserve: false, name: vartmp, type: lvm_partition, id: vartmp-lv }
     - { fstype: ext4, volume: vartmp-lv, preserve: false, type: format, id: vartmp-filesystem }
-    - { path: /var/tmp, options: "noatime,nodev,nosuid", device: vartmp-filesystem, type: mount, id: vartmp-mount }
+    - { path: /var/tmp, options: "noatime,nodev,noexec,nosuid", device: vartmp-filesystem, type: mount, id: vartmp-mount }
 # 8G for var/log
     - { size: 8G, volgroup: vg0, wipe: superblock, preserve: false, name: log, type: lvm_partition, id: log-lv }
     - { fstype: ext4, volume: log-lv, preserve: false, type: format, id: log-filesystem }

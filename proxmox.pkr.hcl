@@ -53,6 +53,7 @@ source "proxmox-iso" "ubuntu" {
   proxmox_url       = "${var.proxmox_url}"
   username          = "${var.proxmox_username}"
   password          = "${var.proxmox_password}"
+  vm_id             = "${var.proxmox_vm_id}"
 
   qemu_agent        = true
 

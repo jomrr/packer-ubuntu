@@ -53,6 +53,11 @@ variable "proxmox_pool" {
     default = "local-btrfs"
 }
 
+variable "proxmox_vm_id" {
+    type = number
+    default = 200
+}
+
 variable "ssh_username" {
     type = string
     default = "packer"
@@ -70,5 +75,5 @@ variable "ssh_password_encrypted" {
 
 variable "vm_name" {
     type = string
-    default = "template-ubuntu-server-24.04"
+    default = "template-us2404"
 }
