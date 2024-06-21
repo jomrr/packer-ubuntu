@@ -78,4 +78,5 @@ autoinstall:
     - "chmod 440 /target/etc/sudoers.d/${var.ssh_username}" # changes target env
     - curtin in-target --target=/target -- sudo sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 apparmor=1 security=apparmor"/' /etc/default/grub
     - curtin in-target --target=/target -- update-grub
+    - curtin in-target --target=/target -- find /etc/apparmor.d -maxdepth 1 -type f -exec aa-enforce {} \;
     - systemctl enable --now ssh # runs in install env

@@ -12,7 +12,7 @@ build {
       name = source.value.name
       bios              = var.boot_mode == "efi" ? "ovmf" : "seabios"
       boot_command      = ["c<wait>linux /casper/vmlinuz --- autoinstall ds='nocloud-net'<enter><wait1s>initrd /casper/initrd <enter><wait1s>boot <enter><wait1s>"]
-      boot_wait         = "5s"
+      boot_wait         = "10s"
       communicator      = "ssh"
       ssh_username      = var.ssh_username
       ssh_password      = var.ssh_password

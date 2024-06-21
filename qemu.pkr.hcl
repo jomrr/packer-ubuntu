@@ -11,7 +11,7 @@ build {
       name = source.value.name
       # packer options
       boot_command      = ["c<wait>linux /casper/vmlinuz --- autoinstall ds='nocloud-net'<enter><wait1s>initrd /casper/initrd <enter><wait1s>boot <enter><wait1s>"]
-      boot_wait         = "5s"
+      boot_wait         = "10s"
       communicator      = "ssh"
       output_directory  = "dist/${var.vm_name_prefix}-${source.value.name}"
       shutdown_command  = "echo ${var.ssh_password} | sudo -S shutdown -P now"
