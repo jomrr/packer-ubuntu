@@ -137,89 +137,93 @@ variable "vm_name_prefix" {
     default = "template"
 }
 
-variable "storage_configs" {
+variable "storage_config_disks" {
   type = map(list(map(string)))
   default = {
     "efi": [
       {
         "id": "disk0"
         "type": "disk",
-        "ptable": "gpt",
-        "path": "/dev/vda",
-        "wipe": "superblock",
-        "preserve": "false",
         "grub_device": "false",
-      },
+        "path": "/dev/vda",
+        "preserve": "false",
+        "ptable": "gpt",
+        "wipe": "superblock",
+      }
+    ]
+  }
+}
+
+variable "storage_config_partitons" {
+  type = map(list(map(string)))
+  default = {
+    "efi": [
       {
         "id": "efi-partition"
         "type": "partition",
         "device": "disk0",
-        "size": "1G",
         "flag": "esp",
-        "number": 1,
-        "partition_type": "EF00",
         "grub_device": "true",
+        "number": "1",
+        "partition_type": "EF00",
+        "preserve": "false",
+        "size": "1G",
         "wipe": "superblock",
-        "preserve": "false",
-      },
-      {
-        "id": "efi-filesystem"
-        "type": "format",
-        "fstype": "fat32",
-        "volume": "efi-partition",
-        "preserve": "false",
-      },
-      {
-        "id": "efi-mount"
-        "type": "mount",
-        "path": "/boot/efi",
-        "options": "defaults,uid=0,gid=0,umask=077,shortname=winnt",
-        "device": "efi-filesystem",
       },
       {
         "id": "boot-partition"
         "device": "disk0",
         "type": "partition",
+        "flag": "boot",
+        "grub_device": "false",
+        "number": "2",
+        "preserve": "false",
         "size": "1G",
         "wipe": "superblock",
-        "flag": "boot",
-        "number": 2,
-        "preserve": "false",
-        "grub_device": "false",
-      },
-      {
-        "id": "boot-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "boot-partition",
-        "preserve": "false",
-      },
-      {
-        "id": "boot-mount"
-        "type": "mount",
-        "path": "/boot",
-        "options": "relatime",
-        "device": "boot-filesystem",
       },
       {
         "id": "pv0"
         "type": "partition",
         "device": "disk0",
-        "size": -1,
-        "wipe": "superblock",
         "flag": "",
-        "number": 3,
-        "preserve": "false",
         "grub_device": "false",
-      },
+        "number": "3",
+        "preserve": "false",
+        "size": "-1",
+        "wipe": "superblock",
+      }
+    ]
+  }
+}
+
+variable "storage_config_volgroups" {
+  type = map(list(object({
+    id       = string
+    type     = string
+    devices  = list(string)
+    name     = string
+    preserve = string
+    wipe     = string
+  })))
+  default = {
+    "efi": [
       {
         "id": "vg0"
         "type": "lvm_volgroup",
+        "devices": ["pv0"],
         "name": "vg0",
-        "devices": "pv0",
         "preserve": "false",
-      },
-      {
+        "wipe": "superblock",
+      }
+    ]
+  }
+}
+
+variable "storage_config_logvols" {
+  type = map(list(map(string)))
+  default = {
+    "efi": [
+       {
         "id": "root-lv"
         "type": "lvm_partition",
         "size": "32G",
@@ -227,20 +231,6 @@ variable "storage_configs" {
         "wipe": "superblock",
         "preserve": "false",
         "name": "root",
-      },
-      {
-        "id": "root-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "root-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "root-mount"
-        "type": "mount",
-        "path": "/",
-        "options": "relatime",
-        "device": "root-filesystem",
       },
       {
         "id": "home-lv"
@@ -252,20 +242,6 @@ variable "storage_configs" {
         "name": "home",
       },
       {
-        "id": "home-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "home-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "home-mount"
-        "type": "mount",
-        "path": "/home",
-        "options": "relatime,nodev,nosuid",
-        "device": "home-filesystem",
-      },
-      {
         "id": "opt-lv"
         "type": "lvm_partition",
         "size": "16G",
@@ -273,20 +249,6 @@ variable "storage_configs" {
         "wipe": "superblock",
         "preserve": "false",
         "name": "opt",
-      },
-      {
-        "id": "opt-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "opt-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "opt-mount"
-        "type": "mount",
-        "path": "/opt",
-        "options": "relatime,nodev,nosuid",
-        "device": "opt-filesystem",
       },
       {
         "id": "tmp-lv"
@@ -298,20 +260,6 @@ variable "storage_configs" {
         "name": "tmp",
       },
       {
-        "id": "tmp-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "tmp-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "tmp-mount"
-        "type": "mount",
-        "device": "tmp-filesystem",
-        "path": "/tmp",
-        "options": "noatime,nodev,nosuid,noexec",
-      },
-      {
         "id": "var-lv"
         "type": "lvm_partition",
         "size": "48G",
@@ -319,20 +267,6 @@ variable "storage_configs" {
         "wipe": "superblock",
         "preserve": "false",
         "name": "var",
-      },
-      {
-        "id": "var-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "var-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "var-mount"
-        "type": "mount",
-        "path": "/var",
-        "options": "relatime,nodev,nosuid",
-        "device": "var-filesystem",
       },
       {
         "id": "vartmp-lv"
@@ -344,20 +278,6 @@ variable "storage_configs" {
         "name": "vartmp",
       },
       {
-        "id": "vartmp-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "vartmp-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "vartmp-mount"
-        "type": "mount",
-        "path": "/var/tmp",
-        "options": "noatime,nodev,noexec,nosuid",
-        "device": "vartmp-filesystem",
-      },
-      {
         "id": "log-lv"
         "type": "lvm_partition",
         "size": "8G",
@@ -367,20 +287,6 @@ variable "storage_configs" {
         "name": "log",
       },
       {
-        "id": "log-filesystem"
-        "type": "format",
-        "fstype": "ext4",
-        "volume": "log-lv",
-        "preserve": "false",
-      },
-      {
-        "id": "log-mount"
-        "type": "mount",
-        "path": "/var/log",
-        "options": "relatime,nodev,noexec,nosuid",
-        "device": "log-filesystem",
-      },
-      {
         "id": "audit-lv"
         "type": "lvm_partition",
         "size": "8G",
@@ -388,6 +294,77 @@ variable "storage_configs" {
         "wipe": "superblock",
         "preserve": "false",
         "name": "audit",
+      }
+    ]
+  }
+}
+
+variable "storage_config_filesystems" {
+  type = map(list(map(string)))
+  default = {
+    "efi": [
+      {
+        "id": "efi-filesystem"
+        "type": "format",
+        "fstype": "fat32",
+        "volume": "efi-partition",
+        "preserve": "false",
+      },
+      {
+        "id": "boot-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "boot-partition",
+        "preserve": "false",
+      },
+      {
+        "id": "root-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "root-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "home-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "home-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "opt-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "opt-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "tmp-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "tmp-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "var-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "var-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "vartmp-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "vartmp-lv",
+        "preserve": "false",
+      },
+      {
+        "id": "log-filesystem"
+        "type": "format",
+        "fstype": "ext4",
+        "volume": "log-lv",
+        "preserve": "false",
       },
       {
         "id": "audit-filesystem"
@@ -395,6 +372,77 @@ variable "storage_configs" {
         "fstype": "ext4",
         "volume": "audit-lv",
         "preserve": "false",
+      }
+    ]
+  }
+}
+
+variable "storage_config_mounts" {
+  type = map(list(map(string)))
+  default = {
+    "efi": [
+      {
+        "id": "efi-mount"
+        "type": "mount",
+        "path": "/boot/efi",
+        "options": "defaults,uid=0,gid=0,umask=077,shortname=winnt",
+        "device": "efi-filesystem",
+      },
+      {
+        "id": "boot-mount"
+        "type": "mount",
+        "path": "/boot",
+        "options": "relatime",
+        "device": "boot-filesystem",
+      },
+      {
+        "id": "root-mount"
+        "type": "mount",
+        "path": "/",
+        "options": "relatime",
+        "device": "root-filesystem",
+      },
+      {
+        "id": "home-mount"
+        "type": "mount",
+        "path": "/home",
+        "options": "relatime,nodev,nosuid",
+        "device": "home-filesystem",
+      },
+      {
+        "id": "opt-mount"
+        "type": "mount",
+        "path": "/opt",
+        "options": "relatime,nodev,nosuid",
+        "device": "opt-filesystem",
+      },
+      {
+        "id": "tmp-mount"
+        "type": "mount",
+        "device": "tmp-filesystem",
+        "path": "/tmp",
+        "options": "noatime,nodev,nosuid,noexec",
+      },
+      {
+        "id": "var-mount"
+        "type": "mount",
+        "path": "/var",
+        "options": "relatime,nodev,nosuid",
+        "device": "var-filesystem",
+      },
+      {
+        "id": "vartmp-mount"
+        "type": "mount",
+        "path": "/var/tmp",
+        "options": "noatime,nodev,noexec,nosuid",
+        "device": "vartmp-filesystem",
+      },
+      {
+        "id": "log-mount"
+        "type": "mount",
+        "path": "/var/log",
+        "options": "relatime,nodev,noexec,nosuid",
+        "device": "log-filesystem",
       },
       {
         "id": "audit-mount"
