@@ -4,7 +4,7 @@ autoinstall:
     id: ubuntu-server-minimal
   version: 1
   early-commands:
-    - systemctl disable --now ssh # runs in install env
+    - systemctl disable --now ssh # runs in install env, disable for reboot
   identity:
     hostname: ${var.vm_name_prefix}-${source.value.name}
     username: ${var.ssh_username}
@@ -22,6 +22,14 @@ autoinstall:
     disable_root: true
   timezone: Europe/Berlin
   updates: all
+  late-commands:
+    - curtin in-target --target=/target -- systemctl mask ctrl-alt-del.target # runs in target env
+    - "echo '${var.ssh_username} ALL=(ALL:ALL) ALL' > /target/etc/sudoers.d/${var.ssh_username}" # writes to target env
+    - "chmod 440 /target/etc/sudoers.d/${var.ssh_username}" # changes target env
+    - curtin in-target --target=/target -- sudo sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 apparmor=1 security=apparmor"/' /etc/default/grub
+    - curtin in-target --target=/target -- update-grub
+    - curtin in-target --target=/target -- find /etc/apparmor.d -maxdepth 1 -type f -exec aa-enforce {} \;
+    - systemctl enable --now ssh # runs in install env
   storage:
     grub:
       reorder_uefi: false
@@ -72,11 +80,3 @@ autoinstall:
     - { size: 8G, volgroup: vg0, wipe: superblock, preserve: false, name: audit, type: lvm_partition, id: audit-lv }
     - { fstype: ext4, volume: audit-lv, preserve: false, type: format, id: audit-filesystem }
     - { path: /var/log/audit, options: "relatime,nodev,noexec,nosuid", device: audit-filesystem, type: mount, id: audit-mount }
-  late-commands:
-    - curtin in-target --target=/target -- systemctl mask ctrl-alt-del.target # runs in target env
-    - "echo '${var.ssh_username} ALL=(ALL:ALL) ALL' > /target/etc/sudoers.d/${var.ssh_username}" # writes to target env
-    - "chmod 440 /target/etc/sudoers.d/${var.ssh_username}" # changes target env
-    - curtin in-target --target=/target -- sudo sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 apparmor=1 security=apparmor"/' /etc/default/grub
-    - curtin in-target --target=/target -- update-grub
-    - curtin in-target --target=/target -- find /etc/apparmor.d -maxdepth 1 -type f -exec aa-enforce {} \;
-    - systemctl enable --now ssh # runs in install env
