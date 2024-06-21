@@ -62,7 +62,11 @@ source "proxmox-iso" "ubuntu" {
 }
 
 build {
-    sources = ["source.proxmox-iso.ubuntu"]
+    name = "proxmox-iso"
+
+    dynamic "source" {
+      for_each = var.sources
+      labels = ["source.proxmos-iso.ubuntu"]
 
     provisioner "ansible" {
       galaxy_file   = "./requirements.yml"

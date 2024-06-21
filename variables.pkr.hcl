@@ -45,7 +45,7 @@ variable "proxmox_pool" {
 
 variable "proxmox_vm_id" {
     type = number
-    default = 200
+    default = null
 }
 
 variable "sources" {
@@ -142,17 +142,18 @@ variable "storage_configs" {
   default = {
     "efi": [
       {
+        "id": "disk0"
+        "type": "disk",
         "ptable": "gpt",
         "path": "/dev/vda",
         "wipe": "superblock",
         "preserve": "false",
         "grub_device": "false",
-        "type": "disk",
-        "id": "disk0"
       },
       {
-        "device": "disk0",
+        "id": "efi-partition"
         "type": "partition",
+        "device": "disk0",
         "size": "1G",
         "flag": "esp",
         "number": 1,
@@ -160,23 +161,23 @@ variable "storage_configs" {
         "grub_device": "true",
         "wipe": "superblock",
         "preserve": "false",
-        "id": "efi-partition"
       },
       {
+        "id": "efi-filesystem"
+        "type": "format",
         "fstype": "fat32",
         "volume": "efi-partition",
         "preserve": "false",
-        "type": "format",
-        "id": "efi-filesystem"
       },
       {
+        "id": "efi-mount"
+        "type": "mount",
         "path": "/boot/efi",
         "options": "defaults,uid=0,gid=0,umask=077,shortname=winnt",
         "device": "efi-filesystem",
-        "type": "mount",
-        "id": "efi-mount"
       },
       {
+        "id": "boot-partition"
         "device": "disk0",
         "type": "partition",
         "size": "1G",
@@ -185,223 +186,222 @@ variable "storage_configs" {
         "number": 2,
         "preserve": "false",
         "grub_device": "false",
-        "id": "boot-partition"
       },
       {
+        "id": "boot-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "boot-partition",
         "preserve": "false",
-        "type": "format",
-        "id": "boot-filesystem"
       },
       {
+        "id": "boot-mount"
+        "type": "mount",
         "path": "/boot",
         "options": "relatime",
         "device": "boot-filesystem",
-        "type": "mount",
-        "id": "boot-mount"
       },
       {
+        "id": "pv0"
+        "type": "partition",
         "device": "disk0",
-        "size": "100%",
+        "size": -1,
         "wipe": "superblock",
         "flag": "",
         "number": 3,
         "preserve": "false",
         "grub_device": "false",
-        "type": "partition",
-        "id": "pv0"
       },
       {
-        "name": "vg0",
-        "devices": "[pv0]",
-        "preserve": "false",
-        "type": "lvm_volgroup",
         "id": "vg0"
+        "type": "lvm_volgroup",
+        "name": "vg0",
+        "devices": "pv0",
+        "preserve": "false",
       },
       {
+        "id": "root-lv"
+        "type": "lvm_partition",
         "size": "32G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "root",
-        "type": "lvm_partition",
-        "id": "root-lv"
       },
       {
+        "id": "root-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "root-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "root-filesystem"
       },
       {
+        "id": "root-mount"
+        "type": "mount",
         "path": "/",
         "options": "relatime",
         "device": "root-filesystem",
-        "type": "mount",
-        "id": "root-mount"
       },
       {
+        "id": "home-lv"
+        "type": "lvm_partition",
         "size": "48G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "home",
-        "type": "lvm_partition",
-        "id": "home-lv"
       },
       {
+        "id": "home-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "home-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "home-filesystem"
       },
       {
+        "id": "home-mount"
+        "type": "mount",
         "path": "/home",
         "options": "relatime,nodev,nosuid",
         "device": "home-filesystem",
-        "type": "mount",
-        "id": "home-mount"
       },
       {
+        "id": "opt-lv"
+        "type": "lvm_partition",
         "size": "16G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "opt",
-        "type": "lvm_partition",
-        "id": "opt-lv"
       },
       {
+        "id": "opt-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "opt-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "opt-filesystem"
       },
       {
+        "id": "opt-mount"
+        "type": "mount",
         "path": "/opt",
         "options": "relatime,nodev,nosuid",
         "device": "opt-filesystem",
-        "type": "mount",
-        "id": "opt-mount"
       },
       {
+        "id": "tmp-lv"
+        "type": "lvm_partition",
         "size": "16G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "tmp",
-        "type": "lvm_partition",
-        "id": "tmp-lv"
       },
       {
+        "id": "tmp-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "tmp-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "tmp-filesystem"
       },
       {
+        "id": "tmp-mount"
+        "type": "mount",
+        "device": "tmp-filesystem",
         "path": "/tmp",
         "options": "noatime,nodev,nosuid,noexec",
-        "device": "tmp-filesystem",
-        "type": "mount",
-        "id": "tmp-mount"
       },
       {
+        "id": "var-lv"
+        "type": "lvm_partition",
         "size": "48G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "var",
-        "type": "lvm_partition",
-        "id": "var-lv"
       },
       {
+        "id": "var-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "var-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "var-filesystem"
       },
       {
+        "id": "var-mount"
+        "type": "mount",
         "path": "/var",
         "options": "relatime,nodev,nosuid",
         "device": "var-filesystem",
-        "type": "mount",
-        "id": "var-mount"
       },
       {
+        "id": "vartmp-lv"
+        "type": "lvm_partition",
         "size": "8G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "vartmp",
-        "type": "lvm_partition",
-        "id": "vartmp-lv"
       },
       {
+        "id": "vartmp-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "vartmp-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "vartmp-filesystem"
       },
       {
+        "id": "vartmp-mount"
+        "type": "mount",
         "path": "/var/tmp",
         "options": "noatime,nodev,noexec,nosuid",
         "device": "vartmp-filesystem",
-        "type": "mount",
-        "id": "vartmp-mount"
       },
       {
+        "id": "log-lv"
+        "type": "lvm_partition",
         "size": "8G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "log",
-        "type": "lvm_partition",
-        "id": "log-lv"
       },
       {
+        "id": "log-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "log-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "log-filesystem"
       },
       {
+        "id": "log-mount"
+        "type": "mount",
         "path": "/var/log",
         "options": "relatime,nodev,noexec,nosuid",
         "device": "log-filesystem",
-        "type": "mount",
-        "id": "log-mount"
       },
       {
+        "id": "audit-lv"
+        "type": "lvm_partition",
         "size": "8G",
         "volgroup": "vg0",
         "wipe": "superblock",
         "preserve": "false",
         "name": "audit",
-        "type": "lvm_partition",
-        "id": "audit-lv"
       },
       {
+        "id": "audit-filesystem"
+        "type": "format",
         "fstype": "ext4",
         "volume": "audit-lv",
         "preserve": "false",
-        "type": "format",
-        "id": "audit-filesystem"
       },
       {
+        "id": "audit-mount"
+        "type": "mount",
         "path": "/var/log/audit",
         "options": "relatime,nodev,noexec,nosuid",
         "device": "audit-filesystem",
-        "type": "mount",
-        "id": "audit-mount"
       }
     ]
   }
