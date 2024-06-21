@@ -46,7 +46,7 @@ build {
           local-hostname = "${var.vm_name_prefix}-${source.value.name}"
         })
         "user-data" = templatefile(
-          "./templates/user-data.${var.boot_mode}.pkrtpl.hcl", { var = var, source = source }
+          "./templates/user-data.${var.boot_mode}.pkrtpl.hcl", { var = var, source = source, local = local }
         )
       }
       cd_label      = "cidata"
