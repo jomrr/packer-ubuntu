@@ -1,4 +1,5 @@
 #cloud-config
+
 autoinstall:
   source:
     id: ubuntu-server-minimal
@@ -33,7 +34,7 @@ autoinstall:
   storage:
     grub:
       reorder_uefi: false
-    config: yamlencode(local.storage_config)
+    config: local.storage_config
   late-commands:
     - systemctl enable --now ssh
     - systemctl mask ctrl-alt-del.target

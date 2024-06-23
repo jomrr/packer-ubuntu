@@ -161,13 +161,24 @@ variable "storage_config_disks" {
         "preserve" = "false"
         "ptable" = "gpt"
         "wipe" = "superblock"
-      }
+      },
     ]
   }
 }
 
 variable "storage_config_partitions" {
-  type = map(list(map(string)))
+  type = map(list(object({
+    id              = string
+    type            = string
+    device          = string
+    flag            = string
+    grub_device     = string
+    partition_type  = string
+    number          = number
+    preserve        = string
+    size            = string
+    wipe            = string
+  })))
   default = {
     "efi" = [
       {
@@ -177,6 +188,7 @@ variable "storage_config_partitions" {
         "flag" = "esp"
         "grub_device" = "true"
         "partition_type" = "EF00"
+        "number" = 1
         "preserve" = "false"
         "size" = "1G"
         "wipe" = "superblock"
@@ -187,6 +199,8 @@ variable "storage_config_partitions" {
         "type" = "partition"
         "flag" = "boot"
         "grub_device" = "false"
+        "partition_type" = "8300"
+        "number" = 2
         "preserve" = "false"
         "size" = "1G"
         "wipe" = "superblock"
@@ -197,6 +211,8 @@ variable "storage_config_partitions" {
         "device" = "disk0"
         "flag" = ""
         "grub_device" = "false"
+        "partition_type" = "8E00"
+        "number" = 3
         "preserve" = "false"
         "size" = "-1"
         "wipe" = "superblock"
@@ -223,7 +239,7 @@ variable "storage_config_volgroups" {
         "name" = "vg0"
         "preserve" = "false"
         "wipe" = "superblock"
-      }
+      },
     ]
   }
 }
@@ -415,14 +431,14 @@ variable "storage_config_mounts" {
         "id" = "home-mount"
         "type" = "mount"
         "path" = "/home"
-        "options" = "relatimenodevnosuid"
+        "options" = "relatime,nodev,nosuid"
         "device" = "home-filesystem"
       },
       {
         "id" = "opt-mount"
         "type" = "mount"
         "path" = "/opt"
-        "options" = "relatimenodevnosuid"
+        "options" = "relatime,nodev,nosuid"
         "device" = "opt-filesystem"
       },
       {
@@ -430,34 +446,34 @@ variable "storage_config_mounts" {
         "type" = "mount"
         "device" = "tmp-filesystem"
         "path" = "/tmp"
-        "options" = "noatimenodevnosuidnoexec"
+        "options" = "noatime,nodev,nosuid,noexec"
       },
       {
         "id" = "var-mount"
         "type" = "mount"
         "path" = "/var"
-        "options" = "relatimenodevnosuid"
+        "options" = "relatime,nodev,nosuid"
         "device" = "var-filesystem"
       },
       {
         "id" = "vartmp-mount"
         "type" = "mount"
         "path" = "/var/tmp"
-        "options" = "noatimenodevnoexecnosuid"
+        "options" = "noatime,nodev,noexec,nosuid"
         "device" = "vartmp-filesystem"
       },
       {
         "id" = "log-mount"
         "type" = "mount"
         "path" = "/var/log"
-        "options" = "relatimenodevnoexecnosuid"
+        "options" = "relatime,nodev,noexec,nosuid"
         "device" = "log-filesystem"
       },
       {
         "id" = "audit-mount"
         "type" = "mount"
         "path" = "/var/log/audit"
-        "options" = "relatimenodevnoexecnosuid"
+        "options" = "relatime,nodev,noexec,nosuid"
         "device" = "audit-filesystem"
       }
     ]

@@ -6,6 +6,7 @@ locals {
   storage_logvols = var.storage_config_logvols[var.boot_mode]
   storage_filesystems = var.storage_config_filesystems[var.boot_mode]
   storage_mounts = var.storage_config_mounts[var.boot_mode]
+  # make one list of all storage configurations for user-data template
   storage_config = concat(
     local.storage_disks,
     local.storage_partitions,
