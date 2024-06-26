@@ -3,11 +3,6 @@
   hosts: all
   become: true
   gather_facts: true
-  tasks:
-    - name: "Install nmap"
-      ansible.builtin.package:
-        name: nmap
-        state: present
   roles:
     - role: ubuntu22cis
   vars:
