@@ -35,9 +35,15 @@
         options: iburst
     ubtu22cis_ufw_allow_out_ports:
       - 22
+      - 25
       - 53
       - 80
+      - 123
+      - 389
       - 443
+      - 465
+      - 587
+      - 636
     ubtu22cis_syslog_service: rsyslog  # rsyslog or journald
     ubtu22cis_remote_log_server: 192.168.2.100
     ubtu22cis_system_is_log_server: false
