@@ -38,7 +38,7 @@
       - 53
       - 80
       - 443
-    ubtu22cis_syslog_service: journald  # rsyslog or journald
+    ubtu22cis_syslog_service: rsyslog  # rsyslog or journald
     ubtu22cis_remote_log_server: 192.168.2.100
     ubtu22cis_system_is_log_server: false
     ubtu22cis_journal_upload_serverkeyfile:
