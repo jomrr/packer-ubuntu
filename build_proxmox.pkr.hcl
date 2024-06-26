@@ -1,10 +1,40 @@
+variable "proxmox_url" {
+    type = string
+    default = "https://192.168.122.167:8006/api2/json"
+}
+
+variable "proxmox_username" {
+    type = string
+    default = "root@pam"
+}
+
+variable "proxmox_password" {
+    type = string
+    default = "packer"
+}
+
+variable "proxmox_node" {
+    type = string
+    default = "pve"
+}
+
+variable "proxmox_pool" {
+    type = string
+    default = "local-btrfs"
+}
+
+variable "proxmox_vm_id" {
+    type = number
+    default = null
+}
+
 source "proxmox-iso" "ubuntu" {}
 
 build {
     name = "proxmox-iso"
 
   dynamic "source" {
-    for_each = var.sources
+    for_each = local.sources
     labels = ["source.proxmox-iso.ubuntu"]
 
     content {

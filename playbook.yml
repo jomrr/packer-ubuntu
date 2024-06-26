@@ -9,4 +9,60 @@
         name: nmap
         state: present
   roles:
-    - role: ansible-role-sysctl
+    - role: ubuntu22cis
+  vars:
+    # see https://github.com/ansible-lockdown/UBUNTU22-CIS/blob/devel/defaults/main.yml  
+    ubtu22cis_grub_user: root
+    ubtu22cis_set_grub_user_pass: true
+    ubtu22cis_grub_user_passwd: '$y$j9T$LcG8Ap18XrU8alcuAxwdG1$8LCEWit0M2Hg/kKaroLp4UY8LJiJD7LBhd8KN.4xvu1'  # packer
+    ubtu22cis_grub_user_file: /etc/grub.d/00_user
+    ubtu22cis_bootloader_password_hash: "grub.pbkdf2.sha512.10000.F8A69FDA85940053458D2366F8B6F4A6F0752C1D09406FF69EDBCC959260BD70146D4FB54697EE375A7E5032703BE2F157CFDF2FD10D26940442A515DF7631F0.22D36A671CE2DD43EF69442ED593F86C16CA691398F295EBE5D624D80F37567B452F1DB878A9AB09121F5E8AC817E3611D9750CFE66FBA00321808CDFE407020"  # packer
+    ubtu22cis_set_boot_pass: false
+    ubtu22cis_sysctl_kernel_conf: /etc/sysctl.d/98_cis_kernel.conf
+    ubtu22cis_apparmor_mode: enforce
+    ubtu22cis_warning_banner: |
+      Authorized uses only. All activity may be monitored and reported.
+    ubtu22cis_time_sync_tool: "systemd-timesyncd"
+    ubtu22cis_time_pool:
+      - name: de.pool.ntp.org
+        options: iburst maxsources 4
+    ubtu22cis_time_servers:
+      - name: ptbtime1.ptb.de
+        options: iburst
+      - name: ptbtime2.ptb.de
+        options: iburst
+      - name: ptbtime3.ptb.de
+        options: iburst
+    ubtu22cis_ufw_allow_out_ports:
+      - 22
+      - 53
+      - 80
+      - 443
+    ubtu22cis_syslog_service: journald  # rsyslog or journald
+    ubtu22cis_remote_log_server: 192.168.2.100
+    ubtu22cis_system_is_log_server: false
+    ubtu22cis_journal_upload_serverkeyfile:
+    ubtu22cis_journal_servercertificatefile:
+    ubtu22cis_journal_trustedcertificatefile:
+    ubtu22cis_journald_systemmaxuse: "#SystemMaxUse="
+    ubtu22cis_journald_systemkeepfree: "SystemKeepFree=1G"
+    ubtu22cis_journald_runtimemaxuse: "#RuntimeMaxUse="
+    ubtu22cis_journald_runtimekeepfree: "RuntimeKeepFree=1G"
+    ubtu22cis_journald_maxfilesec: "MaxFileSec=1month"
+    # sshd configuration
+    allow_users: "packer"
+    allow_groups: ""
+    deny_users: ""
+    deny_groups: ""
+    # password policy
+    # ubtu22cis_passwd_hash_algo is the hashing algorithm used
+    ubtu22cis_passwd_hash_algo: yescrypt  # pragma: allowlist secret
+    # Set pam as well as login defs if PAM is required
+    ubtu22cis_passwd_setpam_hash_algo: false
+    ## Controls 5.5.1.x - Password settings
+    ubtu22cis_pass:
+      max_days: 365
+      min_days: 1
+      warn_age: 7
+      inactive: 30
+    ubtu22cis_bash_umask: '027'

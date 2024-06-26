@@ -2,7 +2,10 @@
 
 collections:
   - name: community.general
+  - name: community.crypto
+  - name: ansible.posix
 
 roles:
-  - src: https://github.com/jomrr/ansible-role-sysctl
+  - name: ubuntu22cis
+    src: https://github.com/ansible-lockdown/UBUNTU22-CIS
     version: main

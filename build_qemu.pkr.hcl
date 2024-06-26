@@ -4,7 +4,7 @@ build {
   name = "qemu"
 
   dynamic "source" {
-    for_each = var.sources
+    for_each = local.sources
     labels = ["source.qemu.ubuntu"]
 
     content {
