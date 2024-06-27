@@ -10,12 +10,12 @@ variable "vsphere_insecure_connection" {
 
 variable "vsphere_username" {
   type = string
-  default = "packer@vpshere.local"
+  default = "packer@vsphere.local"
 }
 
 variable "vsphere_password" {
   type = string
-  default = "Packer,2024"
+  default = "Packer,Build3r"
 }
 
 variable "vsphere_cluster" {
@@ -31,6 +31,11 @@ variable "vsphere_datacenter" {
 variable "vsphere_datastore" {
   type = string
   default = "vms"
+}
+
+variable "vsphere_folder" {
+  type = string
+  default = "Templates"
 }
 
 variable "vsphere_host" {
@@ -53,9 +58,9 @@ variable "vsphere_disk_controller" {
   default = ["pvscsi"]
 }
 
-variable "vsphere_disk_size" {
-  type = number
-  default = 200000
+variable "vsphere_disk_path" {
+  type = string
+  default = "/dev/sda"
 }
 
 variable "vsphere_disk_thin_provisioned" {
@@ -93,7 +98,22 @@ build {
       host              = var.vsphere_host
       datacenter        = var.vsphere_datacenter
       datastore         = var.vsphere_datastore
+      folder            = var.vsphere_folder
+
+      convert_to_template = true
+      local_cache_overwrite = false
+      remote_cache_cleanup = true
+      remote_cache_overwrite = false
+      remote_cache_datastore = var.vsphere_datastore
+
+      # VM options
+      CPUs              = var.cpus
+      RAM               = var.memory
+      RAM_reserve_all   = false
       disk_controller_type = var.vsphere_disk_controller
+      firmware          = "efi-secure" 
+      guest_os_type     = "ubuntu64Guest"
+      vm_version        = "21"
 
       network_adapters {
         network = var.vsphere_network
@@ -101,7 +121,7 @@ build {
       }
 
       storage {
-        disk_size = var.vsphere_disk_size
+        disk_size = var.disk_size
         disk_thin_provisioned = var.vsphere_disk_thin_provisioned
       }
       
@@ -112,7 +132,7 @@ build {
           local-hostname = "${var.vm_name_prefix}-${source.value.name}"
         })
         "user-data" = templatefile(
-          "./templates/user-data.${var.boot_mode}.pkrtpl.hcl", { var = var, source = source, local = local }
+          "./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.vsphere_disk_path }
         )
       }
       cd_label      = "cidata"
@@ -122,8 +142,8 @@ build {
     }
   }
   provisioner "ansible" {
-    galaxy_file   = "./requirements.yml"
-    playbook_file = "./playbook.yml"
+    galaxy_file   = "./ansible/requirements.yml"
+    playbook_file = "./ansible/playbook.yml"
     user          = "${var.ssh_username}"
     extra_arguments = [
       "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",

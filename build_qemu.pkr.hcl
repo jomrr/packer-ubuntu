@@ -1,3 +1,18 @@
+variable "qemu_efi_firmware_code" {
+    type = string
+    default = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+}
+
+variable "qemu_efi_firmware_vars" {
+    type = string
+    default = "/usr/share/OVMF/OVMF_VARS.secboot.fd"
+}
+
+variable "qemu_disk_path" {
+    type = string
+    default = "/dev/vda"
+}
+
 source "qemu" "ubuntu" {}
 
 build {
@@ -20,11 +35,11 @@ build {
       ssh_timeout       = "15m"
       # QEMU VM options
       accelerator       = "kvm"
-      cpus              = "4"
+      cpus              = var.cpus
       format            = "qcow2"
       headless          = "false"
       machine_type      = "q35"
-      memory            = "8192"
+      memory            = var.memory
       qemuargs = [
         [ "-netdev", "user,hostfwd=tcp::{{.SSHHostPort}}-:22,id=forward,net=192.168.76.0/24" ],
         [ "-device", "virtio-net,netdev=forward,id=net0" ],
@@ -34,11 +49,11 @@ build {
       # disk options
       disk_discard      = "unmap"
       disk_interface    = "virtio"
-      disk_size         = var.disk_size
+      disk_size         = "${var.disk_size}M"
       # EFI boot options
-      efi_boot          = var.boot_mode == "efi"
-      efi_firmware_code = var.boot_mode == "efi" ? var.efi_firmware_code : null
-      efi_firmware_vars = var.boot_mode == "efi" ? var.efi_firmware_vars : null
+      efi_boot          = true
+      efi_firmware_code = var.qemu_efi_firmware_code
+      efi_firmware_vars = var.qemu_efi_firmware_vars
       # cloud-init configuration via cdrom (floppy fails in 22.04)
       cd_content    = {
         "meta-data" = jsonencode({
@@ -46,7 +61,7 @@ build {
           local-hostname = "${var.vm_name_prefix}-${source.value.name}"
         })
         "user-data" = templatefile(
-          "./templates/user-data.${var.boot_mode}.pkrtpl.hcl", { var = var, source = source, local = local }
+          "./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.qemu_disk_path }
         )
       }
       cd_label      = "cidata"
@@ -56,8 +71,8 @@ build {
     }
   }
   provisioner "ansible" {
-    galaxy_file   = "./requirements.yml"
-    playbook_file = "./playbook.yml"
+    galaxy_file   = "./ansible/requirements.yml"
+    playbook_file = "./ansible/playbook.yml"
     user          = "${var.ssh_username}"
     extra_arguments = [
       "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",

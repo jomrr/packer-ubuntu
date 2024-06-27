@@ -6,6 +6,6 @@ collections:
   - name: ansible.posix
 
 roles:
-  - name: ubuntu22cis
+  - name: ubtu22cis
     src: https://github.com/ansible-lockdown/UBUNTU22-CIS
     version: main

@@ -1,21 +1,16 @@
-variable "boot_mode" {
-    type = string
-    default = "efi"
+variable "cpus" {
+  type = number
+  default = 4
+}
+
+variable "memory" {
+  type = number
+  default = 8192
 }
 
 variable "disk_size" {
     type = string
-    default = "200G"
-}
-
-variable "efi_firmware_code" {
-    type = string
-    default = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
-}
-
-variable "efi_firmware_vars" {
-    type = string
-    default = "/usr/share/OVMF/OVMF_VARS.secboot.fd"
+    default = "204800"
 }
 
 variable "ssh_username" {

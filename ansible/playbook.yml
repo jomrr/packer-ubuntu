@@ -3,15 +3,19 @@
   hosts: all
   become: true
   gather_facts: true
-  roles:
-    - role: ubuntu22cis
+  tasks:
+    - name: "Import role ubtu22cis"
+      ansible.builtin.include_role:
+        name: ubtu22cis
+      when: ansible_distribution_major_version == "22"
   vars:
-    # see https://github.com/ansible-lockdown/UBUNTU22-CIS/blob/devel/defaults/main.yml  
+    # see https://github.com/ansible-lockdown/UBUNTU22-CIS/blob/devel/defaults/main.yml
     ubtu22cis_grub_user: root
     ubtu22cis_set_grub_user_pass: true
     ubtu22cis_grub_user_passwd: '$y$j9T$LcG8Ap18XrU8alcuAxwdG1$8LCEWit0M2Hg/kKaroLp4UY8LJiJD7LBhd8KN.4xvu1'  # packer
     ubtu22cis_grub_user_file: /etc/grub.d/00_user
-    ubtu22cis_bootloader_password_hash: "grub.pbkdf2.sha512.10000.F8A69FDA85940053458D2366F8B6F4A6F0752C1D09406FF69EDBCC959260BD70146D4FB54697EE375A7E5032703BE2F157CFDF2FD10D26940442A515DF7631F0.22D36A671CE2DD43EF69442ED593F86C16CA691398F295EBE5D624D80F37567B452F1DB878A9AB09121F5E8AC817E3611D9750CFE66FBA00321808CDFE407020"  # packer
+    ubtu22cis_bootloader_password_hash: >-
+      grub.pbkdf2.sha512.10000.F8A69FDA85940053458D2366F8B6F4A6F0752C1D09406FF69EDBCC959260BD70146D4FB54697EE375A7E5032703BE2F157CFDF2FD10D26940442A515DF7631F0.22D36A671CE2DD43EF69442ED593F86C16CA691398F295EBE5D624D80F37567B452F1DB878A9AB09121F5E8AC817E3611D9750CFE66FBA00321808CDFE407020
     ubtu22cis_set_boot_pass: false
     ubtu22cis_sysctl_kernel_conf: /etc/sysctl.d/98_cis_kernel.conf
     ubtu22cis_apparmor_mode: enforce
@@ -28,6 +32,8 @@
         options: iburst
       - name: ptbtime3.ptb.de
         options: iburst
+    ubtu22cis_install_network_manager: false
+    ubtu22cis_sysctl_network_conf: /etc/sysctl.d/98-cis-network.conf
     ubtu22cis_ufw_allow_out_ports:
       - 22
       - 25
