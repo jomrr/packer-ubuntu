@@ -29,6 +29,8 @@ autoinstall:
     - curtin in-target --target=/target -- sudo sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1 apparmor=1 security=apparmor"/' /etc/default/grub
     - curtin in-target --target=/target -- update-grub
     - curtin in-target --target=/target -- find /etc/apparmor.d -maxdepth 1 -type f -exec aa-enforce {} \;
+    - curtin in-target --target=/target -- sed -i '/swap/d' /etc/fstab
+    - curtin in-target --target=/target -- rm -f /swap.img
     - systemctl enable --now ssh # runs in install env
   storage:
     grub:
