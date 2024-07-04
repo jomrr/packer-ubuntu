@@ -1,11 +1,14 @@
 ---
 
 collections:
-  - name: community.general
-  - name: community.crypto
-  - name: ansible.posix
+  - community.general
+  - community.crypto
+  - ansible.posix
 
 roles:
   - name: ubtu22cis
     src: https://github.com/ansible-lockdown/UBUNTU22-CIS
+    version: main
+  - name: certificates
+    src: https://github.com/jomrr/ansible-role-certificates
     version: main
