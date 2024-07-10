@@ -4,6 +4,8 @@ set -e
 # Backup originally packaged sshd_config
 cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config.pkg
 
+sudo mkdir -m 0700 -p /etc/ssh/sshd_config.d
+
 cat <<EOF > /etc/ssh/sshd_config
 Port 22
 AddressFamily inet
@@ -14,6 +16,10 @@ HostKey /etc/ssh/ssh_host_rsa_key
 
 SyslogFacility AUTH
 LogLevel VERBOSE
+
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com
+KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
 
 PermitRootLogin no
 
@@ -51,6 +57,9 @@ UsePAM yes
 
 AllowTcpForwarding no
 AllowAgentForwarding no
+Banner /etc/issue.net
+ClientAliveCountMax 3
+ClientAliveInterval 300
 Compression no
 GatewayPorts no
 LoginGraceTime 30
@@ -70,6 +79,15 @@ VersionAddendum none
 X11Forwarding no
 X11UseLocalhost yes
 EOF
+
+# Remove weak moduli from /etc/ssh/moduli file
+awk '$5 >= 4096' /etc/ssh/moduli > /etc/ssh/moduli.new
+test -f /etc/ssh/moduli.new && mv /etc/ssh/moduli.new /etc/ssh/moduli || true 
+
+# Secure sshd_config files and keys
+find /etc/ssh/ -type d -exec chmod 0700 {} \;
+find /etc/ssh/ -type f -exec chown root:root {} \;
+find /etc/ssh/ -type f -exec chmod 0600 {} \;
 
 # Remove ssh host keys
 # find /etc/ssh/ -name 'ssh_host_*_key' -delete
