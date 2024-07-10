@@ -1,0 +1,10 @@
+---
+# repo: packer-ubuntu
+# file: ansible/vars/timesyncd.yml
+
+# provision ssh keys for ansible_ssh_user
+packer_provision_ssh_keys: false
+
+# the ssh public key to deploy, defaults to standard vagrant pubkey.
+packer_provision_ssh_key_urls: []
+#  - "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

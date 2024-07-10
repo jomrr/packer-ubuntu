@@ -36,11 +36,11 @@ variable "proxmox_vm_id" {
 source "proxmox-iso" "ubuntu" {}
 
 build {
-    name = "proxmox-iso"
+    name = "proxmox"
 
   dynamic "source" {
     for_each = local.sources
-    labels = ["source.proxmox-iso.ubuntu"]
+    labels = ["proxmox-iso.ubuntu"]
 
     content {
       # Packer options
@@ -52,7 +52,7 @@ build {
       ssh_username      = var.ssh_username
       ssh_password      = var.ssh_password
       ssh_timeout       = "15m"
-      vm_name           = join("-", [var.vm_name_prefix, source.value.name])
+      vm_name           = var.vm_name
 
       # Proxmox options
       insecure_skip_tls_verify = true
@@ -72,7 +72,7 @@ build {
 
       additional_iso_files {
         cd_content        = {
-          "meta-data" = "{\"instance-id\":\"${var.vm_name_prefix}-${source.value.name}\",\"local-hostname\":\"${var.vm_name_prefix}-${source.value.name}\"}",
+          "meta-data" = "{\"instance-id\":\"${var.vm_name}-${source.value.name}\",\"local-hostname\":\"${var.hostname}\"}",
           "user-data" = templatefile("./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.proxmox_disk_path })
         }
         cd_label          = "cidata"
@@ -80,7 +80,10 @@ build {
       }
 
       disks {
+          discard = true
           disk_size = "${var.disk_size}M"
+          format = "qcow2"
+          ssd = true
           storage_pool = var.proxmox_pool
           type = "virtio"
       }
@@ -101,14 +104,29 @@ build {
       }
     }
   }
-
+  # run provisionerss to clean and configure the system
     provisioner "ansible" {
-      galaxy_file   = "./ansible/requirements.yml"
-      playbook_file = "./ansible/playbook.yml"
-      user          = "${var.ssh_username}"
-      extra_arguments = [
-        "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",
-        "--extra-vars", "ansible_become_pass=${var.ssh_password}",
-      ]
-    }
+    galaxy_file   = "./ansible/requirements.yml"
+    galaxy_force_with_deps = true
+    playbook_file = "./ansible/playbook.yml"
+    user          = "${var.ssh_username}"
+    extra_arguments = [
+      "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",
+      "--extra-vars", "ansible_become_pass=${var.ssh_password}",
+    ]
+  }
+  provisioner "shell" {
+    execute_command = "{{ .Vars }} echo ${var.ssh_password} | sudo -S -E bash '{{ .Path }}'"
+    scripts = [
+      "./scripts/apparmor.sh",
+      "./scripts/coredumps.sh",
+      "./scripts/editor.sh",
+      "./scripts/ipv6.sh",
+      "./scripts/sshd.sh",
+      "./scripts/sysctl.sh",
+      "./scripts/systemd.sh",
+      "./scripts/ufw.sh",
+      "./scripts/zero_prep.sh",
+    ]
+  }
 }

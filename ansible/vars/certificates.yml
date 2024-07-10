@@ -1,5 +1,7 @@
+---
 # file: ansible/vars/certificates.yml
 
+# Set list of local paths the CA certificates are stored
 certificates_ca_certs:
   - src: "{{ lookup('ansible.builtin.env', 'HOME') }}/src/packer/packer-ubuntu/dist/certs/example-root-ca.crt"
     dest: "{{ certificates_ca_trust_dir }}/example-root-ca.crt"

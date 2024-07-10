@@ -1,14 +1,26 @@
 ---
 
 collections:
-  - community.general
-  - community.crypto
-  - ansible.posix
+  - name: ansible.posix
+  - name: community.crypto
+  - name: community.general
 
 roles:
-  - name: ubtu22cis
-    src: https://github.com/ansible-lockdown/UBUNTU22-CIS
-    version: main
   - name: certificates
     src: https://github.com/jomrr/ansible-role-certificates
+    version: main
+  - name: packer_provision
+    src: https://github.com/jomrr/ansible-role-packer_provision
+    version: main
+  - name: journald
+    src: https://github.com/jomrr/ansible-role-journald
+    version: main
+  - name: resolved
+    src: https://github.com/jomrr/ansible-role-resolved
+    version: main
+  - name: timesyncd
+    src: https://github.com/jomrr/ansible-role-timesyncd
+    version: main
+  - name: ubtu22cis
+    src: https://github.com/ansible-lockdown/UBUNTU22-CIS
     version: main

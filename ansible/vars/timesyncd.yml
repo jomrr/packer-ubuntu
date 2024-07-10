@@ -1,0 +1,7 @@
+---
+# repo: packer-ubuntu
+# file: ansible/vars/timesyncd.yml
+
+# Set the NTP servers for systemd-timesyncd
+timesyncd_ntp_servers:
+  - de.pool.ntp.org

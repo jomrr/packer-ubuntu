@@ -28,7 +28,12 @@ variable "ssh_password_encrypted" {
     default = "$y$j9T$LcG8Ap18XrU8alcuAxwdG1$8LCEWit0M2Hg/kKaroLp4UY8LJiJD7LBhd8KN.4xvu1"
 }
 
-variable "vm_name_prefix" {
+variable "hostname" {
     type = string
-    default = "template"
+    default = "template-ubuntu"
+}
+
+variable "vm_name" {
+    type = string
+    default = "template-ubuntu"
 }

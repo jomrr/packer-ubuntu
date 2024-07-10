@@ -3,18 +3,54 @@
   hosts: all
   become: true
   gather_facts: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   tasks:
-    - name: "Import variable file for certificates"
+    # Basic provisioning of the machine
+    - name: "Import variable file for packer_provision"
       ansible.builtin.include_vars:
-        file: vars/certificates.yml
-    - name: "Import role certificates"
+        file: vars/packer_provision.yml
+    - name: "Import role packer_provision"
       ansible.builtin.include_role:
-        name: certificates
-    - name: "Import variable file for ubtu22cis"
+        name: packer_provision
+
+    # Deploy certificates
+    # - name: "Import variable file for certificates"
+    #   ansible.builtin.include_vars:
+    #     file: vars/certificates.yml
+    # - name: "Import role certificates"
+    #   ansible.builtin.include_role:
+    #     name: certificates
+
+    # Configure systemd-journald
+    - name: "Import variable file for journald"
       ansible.builtin.include_vars:
-        file: vars/ubtu22cis.yml
-      when: ansible_distribution_major_version == "22"
-    - name: "Import role ubtu22cis"
+        file: vars/journald.yml
+    - name: "Import role journald"
       ansible.builtin.include_role:
-        name: ubtu22cis
-      when: ansible_distribution_major_version == "22"
+        name: journald
+
+    # Configure systemd-resolved
+    - name: "Import variable file for resolved"
+      ansible.builtin.include_vars:
+        file: vars/resolved.yml
+    - name: "Import role resolved"
+      ansible.builtin.include_role:
+        name: resolved
+
+    # Configure systemd-timesyncd
+    - name: "Import variable file for timesyncd"
+      ansible.builtin.include_vars:
+        file: vars/timesyncd.yml
+    - name: "Import role timesyncd"
+      ansible.builtin.include_role:
+        name: timesyncd
+
+    # - name: "Import variable file for ubtu22cis"
+    #   ansible.builtin.include_vars:
+    #     file: vars/ubtu22cis.yml
+    #   when: ansible_distribution_major_version == "22"
+    # - name: "Import role ubtu22cis"
+    #   ansible.builtin.include_role:
+    #     name: ubtu22cis
+    #   when: ansible_distribution_major_version == "22"

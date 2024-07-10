@@ -20,7 +20,7 @@ build {
 
   dynamic "source" {
     for_each = local.sources
-    labels = ["source.qemu.ubuntu"]
+    labels = ["qemu.ubuntu"]
 
     content {
       name = source.value.name
@@ -28,7 +28,7 @@ build {
       boot_command      = ["c<wait>linux /casper/vmlinuz --- autoinstall ds='nocloud-net' vga=794<enter><wait1s>initrd /casper/initrd<enter><wait1s>boot <enter><wait1s>"]
       boot_wait         = "10s"
       communicator      = "ssh"
-      output_directory  = "dist/${var.vm_name_prefix}-${source.value.name}"
+      output_directory  = "dist/${var.vm_name}"
       shutdown_command  = "echo ${var.ssh_password} | sudo -S shutdown -P now"
       ssh_username      = var.ssh_username
       ssh_password      = var.ssh_password
@@ -45,7 +45,7 @@ build {
         [ "-device", "virtio-net,netdev=forward,id=net0" ],
       ]
       vga               = "qxl"
-      vm_name           = join("-", [var.vm_name_prefix, source.value.name])
+      vm_name           = var.vm_name
       # disk options
       disk_discard      = "unmap"
       disk_interface    = "virtio"
@@ -56,13 +56,8 @@ build {
       efi_firmware_vars = var.qemu_efi_firmware_vars
       # cloud-init configuration via cdrom (floppy fails in 22.04)
       cd_content    = {
-        "meta-data" = jsonencode({
-          instance-id = "${var.vm_name_prefix}-${source.value.name}"
-          local-hostname = "${var.vm_name_prefix}-${source.value.name}"
-        })
-        "user-data" = templatefile(
-          "./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.qemu_disk_path }
-        )
+        "meta-data" = "{\"instance-id\":\"${var.vm_name}-${source.value.name}\",\"local-hostname\":\"${var.hostname}\"}",
+        "user-data" = templatefile("./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.qemu_disk_path })
       }
       cd_label      = "cidata"
       # ISO source options
@@ -70,13 +65,29 @@ build {
       iso_url           = source.value.iso_url
     }
   }
-  provisioner "ansible" {
+  # run provisionerss to clean and configure the system
+    provisioner "ansible" {
     galaxy_file   = "./ansible/requirements.yml"
+    galaxy_force_with_deps = true
     playbook_file = "./ansible/playbook.yml"
     user          = "${var.ssh_username}"
     extra_arguments = [
       "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",
       "--extra-vars", "ansible_become_pass=${var.ssh_password}",
+    ]
+  }
+  provisioner "shell" {
+    execute_command = "{{ .Vars }} echo ${var.ssh_password} | sudo -S -E bash '{{ .Path }}'"
+    scripts = [
+      "./scripts/apparmor.sh",
+      "./scripts/coredumps.sh",
+      "./scripts/editor.sh",
+      "./scripts/ipv6.sh",
+      "./scripts/sshd.sh",
+      "./scripts/sysctl.sh",
+      "./scripts/systemd.sh",
+      "./scripts/ufw.sh",
+      "./scripts/zero_prep.sh",
     ]
   }
 }

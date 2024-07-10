@@ -71,11 +71,11 @@ variable "vsphere_disk_thin_provisioned" {
 source "vsphere-iso" "ubuntu" {}
 
 build {
-  name = "vsphere-iso"
+  name = "vsphere"
 
   dynamic "source" {
     for_each = local.sources
-    labels = ["source.vsphere-iso.ubuntu"]
+    labels = ["vsphere-iso.ubuntu"]
 
     content {
       name = source.value.name
@@ -87,8 +87,7 @@ build {
       ssh_username      = var.ssh_username
       ssh_password      = var.ssh_password
       ssh_timeout       = "15m"
-
-      vm_name           = join("-", [var.vm_name_prefix, source.value.name])
+      vm_name           = var.vm_name
       # vsphere options
       vcenter_server    = var.vsphere_vcenter_server
       insecure_connection = var.vsphere_insecure_connection
@@ -127,13 +126,8 @@ build {
       
       # cloud-init configuration via cdrom (floppy fails in 22.04)
       cd_content    = {
-        "meta-data" = jsonencode({
-          instance-id = "${var.vm_name_prefix}-${source.value.name}"
-          local-hostname = "${var.vm_name_prefix}-${source.value.name}"
-        })
-        "user-data" = templatefile(
-          "./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.vsphere_disk_path }
-        )
+        "meta-data" = "{\"instance-id\":\"${var.vm_name}-${source.value.name}\",\"local-hostname\":\"${var.hostname}\"}",
+        "user-data" = templatefile("./templates/user-data.pkrtpl.hcl", { var = var, source = source, local = local, disk = var.vsphere_disk_path })
       }
       cd_label      = "cidata"
       # ISO source options
@@ -141,13 +135,29 @@ build {
       iso_url           = source.value.iso_url
     }
   }
-  provisioner "ansible" {
+  # run provisionerss to clean and configure the system
+    provisioner "ansible" {
     galaxy_file   = "./ansible/requirements.yml"
+    galaxy_force_with_deps = true
     playbook_file = "./ansible/playbook.yml"
     user          = "${var.ssh_username}"
     extra_arguments = [
       "--extra-vars", "ansible_ssh_pass=${var.ssh_password}",
       "--extra-vars", "ansible_become_pass=${var.ssh_password}",
+    ]
+  }
+  provisioner "shell" {
+    execute_command = "{{ .Vars }} echo ${var.ssh_password} | sudo -S -E bash '{{ .Path }}'"
+    scripts = [
+      "./scripts/apparmor.sh",
+      "./scripts/coredumps.sh",
+      "./scripts/editor.sh",
+      "./scripts/ipv6.sh",
+      "./scripts/sshd.sh",
+      "./scripts/sysctl.sh",
+      "./scripts/systemd.sh",
+      "./scripts/ufw.sh",
+      "./scripts/zero_prep.sh",
     ]
   }
 }
