@@ -13,4 +13,4 @@ ufw default deny incoming
 ufw allow 22/tcp
 
 # Enable ufw
-echo y | enable ufw
+echo y | ufw enable
