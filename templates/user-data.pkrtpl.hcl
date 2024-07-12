@@ -1,14 +1,26 @@
 #cloud-config
 autoinstall:
+  version: 1
   source:
     id: ubuntu-server-minimal
-  version: 1
   early-commands:
     - systemctl disable --now ssh # runs in install env, disable for reboot
   identity:
     hostname: ${var.hostname}
     username: ${var.ssh_username}
     password: ${var.ssh_password_encrypted}
+  network:
+    ethernets:
+      enp1s0:
+        dhcp4: false
+        dhcp6: false
+        addresses:
+        - ${var.ipv4cidr}
+        routes:
+        - to: default
+          via: 192.168.30.1
+        nameservers:
+          addresses: [192.168.30.1]
   keyboard:
     layout: de
   locale: en_US.UTF-8

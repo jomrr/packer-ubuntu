@@ -13,6 +13,11 @@ variable "disk_size" {
     default = "204800"
 }
 
+variable "ipv4cidr" {
+    type = string
+    default = "192.168.30.200"
+}
+
 variable "ssh_username" {
     type = string
     default = "packer"

@@ -83,7 +83,7 @@ build {
           discard = true
           disk_size = "${var.disk_size}M"
           format = "qcow2"
-          ssd = true
+          ssd = false  # not supported for virtio
           storage_pool = var.proxmox_pool
           type = "virtio"
       }

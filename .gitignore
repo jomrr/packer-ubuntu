@@ -1,4 +1,5 @@
 dist/*
+vars/*
 packer_cache/
 !.gitkeep
 *.box
